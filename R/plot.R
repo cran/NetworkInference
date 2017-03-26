@@ -1,0 +1,149 @@
+# Common plotting elements
+# 
+# Plotting layout for NetworkInference package.
+# 
+# @param mode What elements to return.
+# 
+# @return A ggplot object that can be added to a ggplot plot 
+PLOT_THEME_ <- function(mode = NULL) {
+    if(is.null(mode)) {
+        out <- theme_bw() 
+    } else if(mode == "color") {
+        out <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", 
+                 "#0072B2", "#D55E00", "#CC79A7")
+    }
+    return(out)
+}
+
+#' Plot a cascade object
+#' 
+#' @import ggplot2
+#' @import ggrepel
+#' @importFrom stats density
+#' 
+#' @param x object of class cascade to be plotted.
+#' @param label_nodes logical, indicating if should the nodes in each cascade be 
+#'     labeled. If the cascades are very dense setting this to \code{FALSE} is
+#'     recommended.
+#' @param selection a vector of cascade ids to plot.
+#' @param ... additional arguments passed to plot.
+#' 
+#' @examples 
+#' 
+#' data(cascades)
+#' plot(cascades, selection = names(cascades$cascade_nodes)[1:5])
+#' plot(cascades, label_nodes = FALSE)
+#' 
+#' @return A ggplot plot object.
+#' @export
+plot.cascade <- function(x, label_nodes = TRUE, selection = NULL, ...) {
+    
+    # Check inputs
+    assert_that(inherits(x, "cascade"))
+    assert_that(inherits(label_nodes, "logical"))
+    pdat <- as.data.frame(x)
+    
+    # Select cascades
+    if(!is.null(selection)) {
+        # Check selection input
+        assert_that(length(selection) >= 1) 
+        assert_that(is.element(class(selection), c("character", "numeric", 
+                                                   "integer", "factor")))
+        chk <- is.element(selection, unique(pdat$cascade_id))
+        if(!all(chk)) {
+            msg <- paste("The following cascade id(s) provided in `selection` do",
+                         "not exist in the cascade object:", 
+                         paste0(selection[!chk], collapse = ","), "\n")
+            stop(msg) 
+        }
+        selection <- as.character(selection)  
+        # Slice data
+        sel <- is.element(pdat$cascade_id, selection)
+        pdat <- pdat[sel, ]
+    }
+    
+    pdat$cascade_id <- as.factor(pdat$cascade_id)
+    
+    if(length(unique(pdat$cascade_id)) > 20 & label_nodes) {
+        msg <- paste("Plotting more than 20 cascades with labels is not",
+                     "recommended. Set label_nodes to FALSE or choose a subset",
+                     "of cascades using the `selection` argument\n")
+        warning(msg)
+    }
+    
+    # Plot
+    palette <-  PLOT_THEME_(mode = "color")
+    
+    ## Labeled Plot
+    if(label_nodes) {
+        p <- ggplot() +
+            geom_line(aes_string(x = "event_time", y = "cascade_id"), 
+                      color = "grey", linetype = 2, data = pdat) +
+            geom_label_repel(aes_string(label = "node_name", color = "node_name", 
+                                        x = "event_time", y = "cascade_id"), 
+                             size = 2.5, data = pdat) +
+            scale_color_discrete(guide = FALSE)
+    ## Unlabeled plot
+    } else {
+        p <- ggplot(pdat, aes_string(x = "cascade_id", y = "event_time")) +
+            geom_violin() + 
+            geom_jitter(height = 0, width = 0.05, alpha = 0.6, size = 0.5) +
+            coord_flip()
+    }
+
+    ## Layout
+    p <- p + 
+        ylab("Cascade ID") + xlab("Time") +
+        PLOT_THEME_()
+    return(p)
+}
+
+#' Visualize netinf output
+#' 
+#' Visualize the inferred diffusion network or the marginal gain in fit obtained
+#' by addition of each edge.
+#' 
+#' @import ggplot2
+#' 
+#' @param x object of class diffnet to be plotted.
+#' @param type character, one of \code{c("network", "improvement")} indicating if 
+#'     the inferred diffusion network (\code{"network"}) or the improvement for each
+#'     edge should be visualized (\code{"improvement"}).
+#' @param ... additional arguments.
+#' 
+#' @examples 
+#'
+#' \dontrun{
+#'  data(cascades)
+#'  res <- netinf(cascades, n_edges = 6, lambda = 1)
+#'  plot(res, type = "network")
+#'  plot(res, type = "improvement")
+#' }
+#' 
+#' @return A ggplot plot object if \code{type = "improvement"} otherwise an 
+#'     igraph plot.
+#' @export
+plot.diffnet <- function(x, type = "network", ...) {
+    # Check inputs
+    type <- match.arg(type, c("network", "improvement"))
+    
+    if(type == "network") {
+        # Check if igraph is installed
+        if(!is.element("igraph", rownames(utils::installed.packages()))) {
+            stop("In order to use this functionality the `igraph` package needs to be installed. Run `install.packages('igraph')` and retry.")
+        }
+        
+        # Plot network
+        g <- igraph::graph_from_data_frame(d = x[, 1:2])
+        igraph::plot.igraph(g, edge.arrow.size=.3, vertex.color = "grey70")
+    }
+    else{
+        ggplot(x) + 
+            geom_line(aes_string(x=c(1:nrow(x)), y = "improvement"), 
+                      color = "grey80", size = 0.5) +
+            geom_point(aes_string(x=c(1:nrow(x)), y = "improvement"), 
+                       size = 0.5) + 
+            xlab("Edge Number") + ylab("Improvement") +
+            PLOT_THEME_()
+    }
+}
