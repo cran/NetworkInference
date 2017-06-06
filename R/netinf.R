@@ -21,7 +21,7 @@
 #' @param lambda numeric, alpha for transmission model.
 #' @param n_edges numeric, number of edges to infer.
 #' 
-#' @return Returns the inferred diffusion network as an edglist in an object of 
+#' @return Returns the inferred diffusion network as an edgelist in an object of 
 #'     class \code{diffnet} and \code{\link[base]{data.frame}}. The first 
 #'     column contains the sender, the second column the receiver node. The 
 #'     third column contains the improvement in fit from adding the edge that is
@@ -40,7 +40,7 @@
 #' 
 #' # Starting with a dataframe
 #' df <- simulate_rnd_cascades(10, n_nodes = 20)
-#' cascades2 <- as.cascade(df, node_names = unique(df$node_name))
+#' cascades2 <- as_cascade_long(df, node_names = unique(df$node_name))
 #' out <- netinf(cascades2, trans_mod = "exponential", n_edges = 5, lambda = 1)
 #' 
 #' @export

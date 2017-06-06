@@ -13,12 +13,12 @@ df <- simulate_rnd_cascades(50, n_node = 20)
 node_names <- unique(df$node_name)
 
 # Cast data into `cascades` object
-## From dataframe
-cascades <- as.cascade(df, node_names = node_names)
+## From long format
+cascades <- as_cascade_long(df, node_names = node_names)
 
-## From matrix
+## From wide format
 df_matrix <- as.matrix(cascades) ### Create example matrix
-cascades <- as.cascade(df_matrix, node_names = node_names)
+cascades <- as_cascade_wide(df_matrix, node_names = node_names)
 
 ## ------------------------------------------------------------------------
 result <- netinf(cascades, trans_mod = "exponential", lambda = 1, n_edges = 5)
@@ -42,7 +42,7 @@ state_names <- rownames(policies)
 pander::pandoc.table(head(policies[1:7, 1:7]))
 
 ## ------------------------------------------------------------------------
-policy_cascades <- as.cascade(policies, node_names = state_names)
+policy_cascades <- as_cascade_wide(policies, node_names = state_names)
 
 ## ------------------------------------------------------------------------
 summary(policy_cascades)
