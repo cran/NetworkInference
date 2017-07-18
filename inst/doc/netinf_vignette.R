@@ -79,10 +79,16 @@ diffusion_network <- netinf(policy_cascades, trans_mod = "exponential",
 
 ## ---- fig.width=7, fig.height=5.5----------------------------------------
 #install.packages('igraph')
-plot(diffusion_network, type = "network")
+# For this functionality the igraph package has to be installed
+# This code is only executed if the package is found:
+if(requireNamespace("igraph", quietly = TRUE)) {
+    plot(diffusion_network, type = "network")
+}
 
 ## ---- message=FALSE, eval=FALSE------------------------------------------
-#  library(igraph)
-#  g <- graph_from_data_frame(d = results[, 1:2])
-#  plot(g, edge.arrow.size=.3, vertex.color = "grey70")
+#  if(requireNamespace("igraph", quietly = TRUE)) {
+#      library(igraph)
+#      g <- graph_from_data_frame(d = results[, 1:2])
+#      plot(g, edge.arrow.size=.3, vertex.color = "grey70")
+#  }
 

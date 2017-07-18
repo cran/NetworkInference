@@ -1,3 +1,10 @@
+# NetworkInference 1.1.1
+
+## Bug Fixes
+
+* Use of igraph now conditional compliant with Writing R Extensions [1.1.3.1](https://cran.r-project.org/doc/manuals/r-release/R-exts.html#Suggested-packages)
+* Fixed version number displayed in startup message
+
 
 # NetworkInference 1.1.0
 
@@ -9,6 +16,7 @@
 
 * x and y axis labels in `plot.cascade` with option `label_nodes=FALSE` were
     reversed
+
 
 # NetworkInference 1.0.0
 
