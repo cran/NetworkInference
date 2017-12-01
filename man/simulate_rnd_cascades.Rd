@@ -4,15 +4,12 @@
 \alias{simulate_rnd_cascades}
 \title{Simulate a set of random cascades}
 \usage{
-simulate_rnd_cascades(n_cascades, n_nodes, id_class = "character")
+simulate_rnd_cascades(n_cascades, n_nodes)
 }
 \arguments{
 \item{n_cascades}{Number of cascades to generate.}
 
 \item{n_nodes}{Number of nodes in the system.}
-
-\item{id_class}{One of \code{c("character", "factor", "numeric")}. What class
-should the cascade_id indicator be.}
 }
 \value{
 A data frame containing (in order of columns) node ids, 

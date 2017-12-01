@@ -1,6 +1,10 @@
+// [[Rcpp::depends(RcppProgress)]]
+#include <progress.hpp>
+#include <progress_bar.hpp>
 #include <Rcpp.h>
 #include <cmath>
 #include <string>
+#include <array>
 
 // Exponential density
 double dexp_(float x, float lambda) {
@@ -114,6 +118,7 @@ Rcpp::List initialize_parents_(Rcpp::List &cascade_nodes,
     
     // Calculate optimal spanning tree for each cascade
     for(int i = 0; i < n_cascades; i++) {
+        Rcpp::checkUserInterrupt();
         Rcpp::IntegerVector this_cascade_ids = cascade_nodes[i];
         Rcpp::NumericVector this_cascade_times = cascade_times[i];
         Rcpp::List tree_result = optimal_spanning_tree_(this_cascade_ids, 
@@ -154,19 +159,19 @@ std::string make_pair_id_(int &u, int &v) {
 }
 
 
-
 // Find possible edges for each cascade
 //
 // Returns:
 //     A hashmap with pairs as keys ('u_v') and a list as value. The list contains
 //     the edge nodes as integers as well as an IntegerVector conatining all 
 //     cascades that the edge is possible in
-std::map <std::string, Rcpp::List> find_possible_edges_(
+std::map<std::array<int, 2>, std::vector<int> > find_possible_edges_(
         Rcpp::IntegerVector &node_ids, Rcpp::List &cascade_nodes, 
         Rcpp::List &cascade_times, int &n_nodes, int &n_cascades) {
     
-    std::map <std::string, Rcpp::List> possible_edges;
+    std::map<std::array<int, 2>, std::vector<int> > possible_edges;
     for(int c = 0; c < n_cascades; c++) {
+        Rcpp::checkUserInterrupt();
         Rcpp::IntegerVector this_cascade_nodes = cascade_nodes[c];
         Rcpp::NumericVector this_cascade_times = cascade_times[c];
         int csize = this_cascade_nodes.size();
@@ -185,20 +190,15 @@ std::map <std::string, Rcpp::List> find_possible_edges_(
                 }
                 
                 // Check if pair is in pair collection. If not include
-                std::string pair_id = make_pair_id_(u, v);
-                if(possible_edges.find(pair_id) == possible_edges.end()) {
-                    Rcpp::List value = Rcpp::List::create(
-                        Rcpp::IntegerVector::create(u, v),
-                        Rcpp::IntegerVector::create(c)
-                    );
-                    possible_edges[pair_id] = value;
+                std::array<int, 2> pair_id = {{u, v}};
+                
+                auto it = possible_edges.find(pair_id);
+                if(it == possible_edges.end()) {
+                    std::vector<int> value;
+                    value.push_back(c);
+                    possible_edges.insert(make_pair(pair_id, value));
                 } else {
-                    Rcpp::List value = possible_edges.find(pair_id)->second;;
-                    Rcpp::IntegerVector current_cascades = value[1];
-                    current_cascades.push_back(c);
-                    possible_edges.erase(pair_id);
-                    possible_edges[pair_id] = Rcpp::List::create(
-                        value[0], current_cascades);
+                    it->second.push_back(c);
                 }
             }
         }
@@ -207,27 +207,20 @@ std::map <std::string, Rcpp::List> find_possible_edges_(
 }
 
 
-// Count the number of possible edges given the data
-// 
-// @param cascade_nodes List of integer vectors of node ids in order of event, 
-//     one per cascade.
-// @param cascade_times List of numeric vectors of event times corresponding to
-//     nodes in cascade_nodes (same order). 
-//     
-// @return Integer number of possible edges
 // [[Rcpp::export]]
 int count_possible_edges_(Rcpp::List &cascade_nodes, Rcpp::List &cascade_times) {
    
     int n_cascades = cascade_nodes.size();
-    
-    std::map <std::string, int> possible_edges;
+    std::map<std::string, int> possible_edges;
     for(int c = 0; c < n_cascades; c++) {
         Rcpp::IntegerVector this_cascade_nodes = cascade_nodes[c];
         Rcpp::NumericVector this_cascade_times = cascade_times[c];
         int csize = this_cascade_nodes.size();
+        //Rcpp::Rcout << "Cascade: " << c << ". Size: " << csize << "\n";
         
         // Use the fact that the cascade data is ordered (see cascade.R)
         for(int i = 0; i < csize; i++) {
+            Rcpp::checkUserInterrupt();
             int u = this_cascade_nodes[i];
             double tu = this_cascade_times[i];
             for(int j = i + 1; j < csize; j++) {
@@ -241,10 +234,12 @@ int count_possible_edges_(Rcpp::List &cascade_nodes, Rcpp::List &cascade_times) 
                 
                 // Check if pair is in pair collection. If not include
                 std::string pair_id = make_pair_id_(u, v);
-                if(possible_edges.find(pair_id) == possible_edges.end()) {
-                    possible_edges[pair_id] = 1;
+                std::map<std::string,int>::iterator it;
+                it = possible_edges.find(pair_id);
+                if(it == possible_edges.end()) {
+                    possible_edges.insert(std::pair<std::string, int>(pair_id, 1));
                 } else {
-                    possible_edges[pair_id] += 1;
+                    it->second += 1;
                 }
             }
         }
@@ -254,19 +249,20 @@ int count_possible_edges_(Rcpp::List &cascade_nodes, Rcpp::List &cascade_times) 
 
 // Find potential replacements for edge u->v
 Rcpp::List tree_replacement_(int &n_cascades, int u, int v, 
-                             std::map <std::string, Rcpp::List> &possible_edges,
-                             Rcpp::List &cascade_times, Rcpp::List &cascade_nodes,
-                             Rcpp::List &parent_data, double &lambda, double &beta,
-                             double &epsilon, int &model) {
+                             std::map <std::array<int, 2>, std::vector<int> > 
+                                 &possible_edges,
+                             Rcpp::List &cascade_times, 
+                             Rcpp::List &cascade_nodes,
+                             Rcpp::List &parent_data, double &lambda, 
+                             double &beta, double &epsilon, int &model) {
      
-    std::string pair_id = make_pair_id_(u, v);
+    std::array<int, 2> pair_id = {{u, v}};
     double improvement = 0;
     Rcpp::IntegerVector replacements;
     Rcpp::NumericVector new_scores;
      
     // Get the cascades the edge is possible in:
-    Rcpp::List value = possible_edges.find(pair_id)->second;;
-    Rcpp::IntegerVector cascades = value[1];
+    std::vector<int> cascades = possible_edges.find(pair_id)->second;
     for(int c = 0; c < cascades.size(); c++) {
         int this_cascade = cascades[c];
         Rcpp::IntegerVector this_cascade_nodes = cascade_nodes[this_cascade];
@@ -307,14 +303,16 @@ Rcpp::List tree_replacement_(int &n_cascades, int u, int v,
 // @param model integer indicating the choice of model: 1: exponential, 
 //     2: power law, 3: rayleigh (only exponential implemented).
 // @param lambda Numeric, rate parameter for exponential transmission model.
-// @param n_edges Numeric, number of edges to infer.
+// @param n_edges Integer, number of edges to infer.
+// @param quiet, Boolean, Should output on progress by suppressed.
 // 
 // @return List containing one vector per edge.
 // [[Rcpp::export]]
 Rcpp::List netinf_(Rcpp::IntegerVector &node_ids, Rcpp::List &cascade_nodes, 
                    Rcpp::List &cascade_times, int &n_edges, int &model, 
-                   double &lambda) {
-    
+                   double &lambda, bool quiet) {
+    if(!quiet)
+        Rcpp::Rcout << "Initializing...\n";
     int n_cascades = cascade_nodes.size();
     int n_nodes = node_ids.size();
     double beta = 0.5;
@@ -322,10 +320,13 @@ Rcpp::List netinf_(Rcpp::IntegerVector &node_ids, Rcpp::List &cascade_nodes,
     Rcpp::List parent_data = initialize_parents_(cascade_nodes, cascade_times,
                                                  lambda, beta, epsilon, model,
                                                  n_cascades);
-    std::map <std::string, Rcpp::List> possible_edges = find_possible_edges_(
-        node_ids, cascade_nodes, cascade_times, n_nodes, n_cascades);
 
-    
+    std::map <std::array<int, 2>, std::vector<int> > 
+        possible_edges = find_possible_edges_(node_ids, cascade_nodes, 
+                                               cascade_times, n_nodes, 
+                                               n_cascades);
+
+   
     // Output containers
     Rcpp::List edges(n_edges); 
     Rcpp::NumericVector scores(n_edges);
@@ -338,31 +339,22 @@ Rcpp::List netinf_(Rcpp::IntegerVector &node_ids, Rcpp::List &cascade_nodes,
         throw std::invalid_argument(msg);
     }
     
+    if(!quiet) 
+        Rcpp::Rcout << "Inferring Edges...\n";
+    Progress p(n_edges*possible_edges.size(), !quiet);
     for(int e = 0; e < n_edges; e++) {
-        
         double max_improvement = 0;
-        std::string best_edge;
+        std::array<int, 2> best_edge;
         Rcpp::List replacement;
         
-        // Create a vector of keys to loop over the map in parallel
-        Rcpp::CharacterVector keys(possible_edges.size());
-        int i = 0;
         for (auto const& x : possible_edges) {
-            keys[i] = x.first;
-            i++;
-        }
-        
-        for (unsigned int i = 0; i < possible_edges.size(); i++) {
-            
-            // Get integer ids of edge nodes for current edge 
-            std::string this_id = Rcpp::as<std::string>(keys[i]);
-            Rcpp::List this_edge = possible_edges[this_id];
-            Rcpp::IntegerVector pair = this_edge[0];
-            
+            Rcpp::checkUserInterrupt();
             //potential parent
-            int u = pair[0];
+            int u = x.first[0];
             // infected node
-            int v = pair[1];
+            int v = x.first[1];
+            
+            std::array<int, 2> this_id = {{u, v}};
             
             //find replacements for u->v edge
             Rcpp::List e_replacements = tree_replacement_(n_cascades, u, v,
@@ -383,12 +375,11 @@ Rcpp::List netinf_(Rcpp::IntegerVector &node_ids, Rcpp::List &cascade_nodes,
                 // store best edge id
                 best_edge = this_id;
             }
-
+        p.increment();
         }
         
         // Store the best results
-        Rcpp::IntegerVector pair = possible_edges[best_edge][0];
-        edges[e] = pair;
+        edges[e] = best_edge;
         scores[e] = max_improvement;
 
         // Get data to update parent information for new edge
@@ -396,8 +387,8 @@ Rcpp::List netinf_(Rcpp::IntegerVector &node_ids, Rcpp::List &cascade_nodes,
         Rcpp::NumericVector replacement_score = replacement[2];
         
         // Get u and v of best edge
-        int u = pair[0];
-        int v = pair[1];
+        int u = best_edge[0];
+        int v = best_edge[1];
         
         // Update the parent data 
         for(int i = 0; i < replacement_data.size(); i++) {
