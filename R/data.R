@@ -1,31 +1,61 @@
-#' US States Policy Adaption
+#' US State Policy Adoption (SPID)
 #'
-#' Adoption dates (years) for 187 policies across 50 US states. Compiled by
-#' Desmarais et al. (2015).
+#' The SPID data includes information on the year of adoption for over 700 
+#' policies in the American states. 
+#' 
+#' This version 1.0 of the database. For each policy we document the year of first 
+#' adoption for each state. Adoption dates range from 1691 to 2017 and includes 
+#' all fifty states. Policies are adopted by anywhere from 1 to 50 states, with 
+#' an average of 24 adoptions. The data were assembled from a variety of sources, 
+#' including academic publications and policy advocacy/information groups. 
+#' Policies were coded according to the Policy Agendas Project major 
+#' topic code. Additional information on policies is available at the source 
+#' repository.
 #' 
 #' @name policies
 #' 
 #' @usage data(policies)  
 #' @docType data
 #' 
-#' @format The data is in a matrix format. Rows correspond to states (see rownames) columns
-#'     to policies. Cell entries indicate the year a state adopted a policy. \code{NA} 
-#'     entries indicate states not having adopted a policy at all. 
+#' @format The data comes in two objects of class \code{data.frame}. The first
+#'     object, named \code{policies} contains the adoption events. Each row 
+#'     corresponds to an adoption event. Each adoption event is described by 
+#'     the three columns: 
+#' \itemize{
+#'     \item \code{statenam}: Name of the adopting state.
+#'     \item \code{policy}: Name of the policy.
+#'     \item \code{adopt_year}: Year when the state adopted the policy.
+#' }
+#' The second object (\code{policies_metadata}) contains more details on each
+#' of the policies. It contains these columns:
+#' \itemize{
+#'     \item \code{policy}: Name of the policy.
+#'     \item \code{source}: Original source of the data.
+#'     \item \code{first_year}: First year any state adopted this policy.
+#'     \item \code{last_year}: Last year any state adopted this policy.
+#'     \item \code{adopt_count}: Number of states that adopted this policy.
+#'     \item \code{description}: Description of the policy.
+#'     \item \code{majortopic}: Topic group the policy belongs to.
+#' } 
+#' Both \code{data.frame} objects can be joined (merged) on the common column
+#' \code{policy} (see example code).
 #'     
-#' @source \url{https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/A1GIMB}
+#' @source \url{https://doi.org/10.7910/DVN/CVYSR7}
 #' 
-#' @references Desmarais, B. A., Harden, J. J., & Boehmke, F. J. (2015). 
-#'     Persistent Policy Pathways: Inferring Diffusion Networks in the American States. 
-#'     American Political Science Review, 109(02), 392-406.
+#' @aliases policies policies_metadata
+#' 
+#' @references Boehmke, Frederick J.; Mark Brockway; Bruce A. Desmarais; 
+#'     Jeffrey J. Harden; Scott LaCombe; Fridolin Linder; and 
+#'     Hanna Wallach. 2018. "A New Database for Inferring Public Policy 
+#'     Innovativeness and Diffusion Networks." Working paper.
+#'     
+#' @examples
+#' 
+#' data('policies')
+#' 
+#' # Join the adoption events with the metadata 
+#' merged_policies <- merge(policies, policies_metadata, by = 'policy')
 "policies"
-
-#load('mkdata-network02.RData')
-#
-#rownames(x) <- x[, 4]
-#policies <- x[, -c(1:4)]
-#policies <- as.matrix(policies)
-#save(policies, file = 'data/policies.RData')
-
 
 #' Example cascades
 #'
@@ -52,7 +82,7 @@
 
 #' Validation output from netinf source.
 #' 
-#' Contians output from original netinf C++ implementation, executed on 
+#' Contains output from original netinf C++ implementation, executed on 
 #' \code{\link{cascades}}. For testing purposes.
 #' 
 #' @name validation
@@ -93,3 +123,33 @@
 #                          "marginal_gain", "median_time_difference",
 #                          "mean_time_difference")
 # save(validation, file = 'data/validation.RData')
+
+
+#' Larger simulated validation network.
+#' 
+#' A network from simulated data. For testing purposes.
+#' 
+#' @name sim_validation
+#' 
+#' @usage data(sim_validation)  
+#' @docType data
+#' 
+#' @format An object of class \code{data.frame} with 4 columns, containing:
+#' \describe{
+#'   \item{origin_node}{Origin of diffusion edge.}
+#'   \item{destination_node}{Destination node of diffusion edge.}
+#'   \item{improvement}{Improvement in score for the edge}
+#'   \item{p-value}{p-value for vuong test}
+#' }
+#' 
+#' @source See code below.
+"sim_validation"
+
+# # Code to generate validation dataset.
+# set.seed(142857)
+# df <- simulate_rnd_cascades(50, 50)
+# cascades <- as_cascade_long(df)
+# network <- netinf(cascades, n_edges = 0.05)
+# sim_validation <- list("input" = cascades, "output" = network)
+# save(sim_validation, file = 'data/sim_validation.RData')
+ 
