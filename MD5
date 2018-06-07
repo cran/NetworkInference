@@ -1,7 +1,7 @@
-199615de3bba533d888fbc0c60d35a93 *DESCRIPTION
+18d92e17f8a462135c229ba1dd32e041 *DESCRIPTION
 73de4b53bf47c2c84b6947abf40c2b3d *LICENSE
 31ad921da9cba6495c5d69c671d18dc4 *NAMESPACE
-775046a3247847c9ae3b81ca4eff0226 *NEWS.md
+f9b5532f79eba6df5490cdc647feaa3f *NEWS.md
 87b947e42434706f1acad343713f1e31 *R/NetworkInference.R
 1b4b01727121fd35a6958f03a5f4938a *R/RcppExports.R
 3b7b978ad09240b156586cd0accf80ef *R/cascade.R
@@ -10,7 +10,7 @@
 754e00a523154318c1c6d12dbc8e1d65 *R/plot.R
 5748ac4586b0533b99588093151a48ab *R/simulate_cascades.R
 d6a4253ae3aeeeb104de300e6b998bad *R/summary.R
-e811519cc6eb0c2284934752fc7f1536 *R/zzz.R
+d4467e347fd5a19733fad008df5e78c1 *R/zzz.R
 a4ffa898c2898ad2717773b61d15f683 *build/vignette.rds
 6d6e048628270ceca8195ced702da283 *data/cascades.RData
 e2e0b783b91250a2e73c99b041577354 *data/policies.RData
@@ -19,10 +19,10 @@ c71cf4a09c6c84746f62bfd35fba2aeb *data/validation.RData
 c19f3ef9f40c8586a364b33e2baa1e99 *inst/CITATION
 460eb707bb894f075d057baead91386a *inst/doc/quickstart_vignette.R
 105f934761a28aa2b08f8aaca0998a94 *inst/doc/quickstart_vignette.Rmd
-7f25267ae0053947bcded8e635ee82ae *inst/doc/quickstart_vignette.html
+9c763194195ce951cd1c2b50c78b137f *inst/doc/quickstart_vignette.html
 0bf60088174199481aa87510e3b94140 *inst/doc/tutorial_vignette.R
 d612ec1f26a9323539f467ed550fb228 *inst/doc/tutorial_vignette.Rmd
-cecc62e73937d08a6caa4f31e1d5f262 *inst/doc/tutorial_vignette.html
+9b7411292bc8dae41047ffc883888fb8 *inst/doc/tutorial_vignette.html
 2a3dbd3032800e120df9952c3cfbe8e7 *man/NetworkInference.Rd
 b8ac7ac9161143fe3b2fcc98e795fcde *man/as.data.frame.cascade.Rd
 0f872819d8390cdd774b6970ee368955 *man/as.matrix.cascade.Rd
@@ -48,7 +48,7 @@ b18dbc17432a26a331e6ba8f6d61980a *man/validation.Rd
 27efcd667acab95e9b79a32721c78169 *src/RcppExports.cpp
 c6631e7710936f5f7db852180abb68f5 *src/distributions.cpp
 71c3b3fcf3a61828021ba9004eafe9ca *src/distributions.h
-96249e696d0856174b5a2ea074887bcd *src/netinf.cpp
+6bd29f98db98fcf37a4fc8f24d5796ac *src/netinf.cpp
 b6030775fcc9a648f22f45f051ba70b6 *src/netinf.h
 961c9af62df7aa4aa6b22a69ead7fd18 *src/netinf_utilities.cpp
 3ff0c6670bd1e805e9abfaf5b486ca37 *src/netinf_utilities.h
