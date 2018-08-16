@@ -1,3 +1,11 @@
+# NetworkInference 1.2.2
+
+## New Features
+
+## Bug Fixes
+* `netinf()` with `log-normal` model didn't run because of an index error in the argument check for `params`
+* Fixed memory allocation error caused by uninitialized comparison
+
 # NetworkInference 1.2.1
 
 ## Bug Fixes

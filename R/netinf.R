@@ -111,8 +111,8 @@ netinf <- function(cascades, trans_mod = "exponential", n_edges = NULL,
         if(model == "exponential" | model == "rayleigh") {
             qassert(params, "N1")
         } else if(model == "log-normal") {
-            qassert(params[0], "N1")
-            qassert(params[1], "N1(0,)")
+            qassert(params[1], "N1")
+            qassert(params[2], "N1(0,)")
         }
     }
     
