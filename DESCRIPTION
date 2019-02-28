@@ -1,8 +1,8 @@
 Package: NetworkInference
 Type: Package
 Title: Inferring Latent Diffusion Networks
-Version: 1.2.3
-Date: 2018-10-24
+Version: 1.2.4
+Date: 2019-02-27
 Authors@R: c(person("Fridolin", "Linder", email = "fridolin.linder@gmail.com",
                   role = c("aut", "cre")),
              person("Bruce", "Desmarais", role = "ctb"))
@@ -13,14 +13,14 @@ Imports: Rcpp (>= 0.12.5), assertthat, checkmate, ggplot2, ggrepel,
 LinkingTo: Rcpp, RcppProgress
 BugReports: https://github.com/desmarais-lab/NetworkInference/issues
 Suggests: testthat, knitr, rmarkdown, pander, igraph, utils, dplyr
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.1
 SystemRequirements: C++11
 LazyData: true
 VignetteBuilder: knitr
 NeedsCompilation: yes
-Packaged: 2018-10-24 14:56:06 UTC; flinder
+Packaged: 2019-02-28 03:27:18 UTC; fridolinlinder
 Author: Fridolin Linder [aut, cre],
   Bruce Desmarais [ctb]
 Maintainer: Fridolin Linder <fridolin.linder@gmail.com>
 Repository: CRAN
-Date/Publication: 2018-10-24 15:20:04 UTC
+Date/Publication: 2019-02-28 05:50:06 UTC
