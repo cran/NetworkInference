@@ -1,11 +1,11 @@
-## ---- eval=FALSE---------------------------------------------------------
-#  install.packages("NetworkInference")
+## ----eval=FALSE---------------------------------------------------------------
+# install.packages("NetworkInference")
 
-## ---- eval=FALSE---------------------------------------------------------
-#  #install.packages(devtools)
-#  devtools::install_github('desmarais-lab/NetworkInference')
+## ----eval=FALSE---------------------------------------------------------------
+# #install.packages(devtools)
+# devtools::install_github('desmarais-lab/NetworkInference')
 
-## ---- results='hide', message=FALSE--------------------------------------
+## ----results='hide', message=FALSE--------------------------------------------
 library(NetworkInference)
 
 # Simulate random cascade data
@@ -19,12 +19,12 @@ cascades <- as_cascade_long(df)
 df_matrix <- as.matrix(cascades) ### Create example matrix
 cascades <- as_cascade_wide(df_matrix)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 result <- netinf(cascades, quiet = TRUE, p_value_cutoff = 0.05)
 
-## ---- eval=FALSE---------------------------------------------------------
-#  head(result)
+## ----eval=FALSE---------------------------------------------------------------
+# head(result)
 
-## ---- results="asis", echo=FALSE-----------------------------------------
+## ----results="asis", echo=FALSE-----------------------------------------------
 pander::pandoc.table(head(result))
 
